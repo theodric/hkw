@@ -112,8 +112,8 @@ check_valid (const char *t)
 
 static char *weekdays[] = { "Monday",
 	"Tuesday",
-	"Wednestay",
-	"Thurstay",
+	"Wednesday",
+	"Thursday",
 	"Saturday",
 	"Sunday"
 };
