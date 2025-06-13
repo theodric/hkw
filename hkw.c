@@ -147,7 +147,7 @@ main ()
 	char ret[255];
 
 	signal (SIGALRM, sighandler);
-	fd = openclock ("/dev/ttyS1");
+	fd = openclock ("/dev/ttyUSB0");
 	if (fd < 0)
 		return 1;
 
