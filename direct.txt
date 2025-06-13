@@ -1,0 +1,95 @@
+Direct Serial Communication with HKW PC - Funkuhr
+
+Serial Port Configuration
+The HKW device requires these specific settings:
+Baud Rate: 300
+Data Bits: 8
+Parity: None
+Stop Bits: 2
+Flow Control: None
+
+3. Communication Protocol
+Based on the C code analysis, here's how the protocol works:
+Command Format
+The device expects commands terminated with carriage return (o\r)
+
+Response Format
+The device responds with exactly 16 characters:
+HHMMSSWDMMYYYV\r
+
+Where:
+HH = Hour (00-23)
+MM = Minute (00-59)
+SS = Second (00-59)
+W = Weekday (1-7, where 1=Monday)
+D = Day (01-31)
+MM = Month (01-12)
+YY = Year (last 2 digits)
+Y = Year (last 2 digits, repeated)
+V = Status byte
+\r = Carriage return
+
+4. Step-by-Step Manual Testing
+Step 1: Connect to the Device
+screen /dev/ttyUSB0 300
+
+Step 2: Send the Command
+Type exactly:
+o
+Then press Enter (which sends \r)
+
+Step 3: Observe the Response
+You should see exactly 16 characters returned, for example:
+14305231212240\r
+
+Step 4: Decode the Response
+Breaking down 14305231212240\r:
+14 = Hour (14:30:52)
+30 = Minute
+52 = Second
+3 = Weekday (Wednesday)
+12 = Day (12th)
+12 = Month (December)
+24 = Year (2024)
+0 = Status byte
+\r = Carriage return
+
+Advanced Testing with stty
+You can configure the serial port manually:
+# Configure port
+stty -F /dev/ttyUSB0 300 cs8 -parenb -cstopb
+
+# Send command
+echo -e "o\r" > /dev/ttyUSB0
+
+# Read response
+timeout 5 cat < /dev/ttyUSB0
+
+8. Using socat for Testing
+# Create a virtual serial connection for testing
+socat -d -d PTY,link=/tmp/vserial1,raw,echo=0,mode=777 PTY,link=/tmp/vserial2,raw,echo=0,mode=777
+
+# In one terminal
+screen /tmp/vserial1 300
+
+# In another terminal  
+echo -e "o\r" > /tmp/vserial2
+
+9. Expected Behavior
+When working correctly:
+Send: o\r
+Wait: 100-500ms
+Receive: Exactly 16 characters ending with \r
+Format: Valid time/date data
+
+10. Debugging Tips
+Use hex dump to see exact bytes:
+echo -e "o\r" | hexdump -CC
+
+Monitor with strace:
+strace -e trace=write,read -p <pid>
+
+Check serial port status:
+stty -F /dev/ttyUSB0 -a
+
+
